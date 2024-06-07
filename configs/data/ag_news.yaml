@@ -1,0 +1,6 @@
+train: ag_news
+valid: ag_news
+tokenizer_name_or_path: gpt2
+cache_dir: /share/kuleshov/ssahoo/textdiffusion/data
+wrap: True
+streaming: False

@@ -1,0 +1,6 @@
+train: wikitext2
+valid: wikitext2
+tokenizer_name_or_path: gpt2
+cache_dir: /share/kuleshov/ssahoo/textdiffusion/data
+wrap: True
+streaming: False

@@ -1,0 +1,3 @@
+# TODO(yair): Currenly not compatible with grad clipping
+_target_: lightning.pytorch.strategies.FSDPStrategy
+sharding_strategy: SHARD_GRAD_OP

@@ -1,0 +1,7 @@
+# TODO: When using this dataset, set model.length = 256 to match D3PM setup
+train: text8
+valid: text8
+tokenizer_name_or_path: text8
+cache_dir: /share/kuleshov/ssahoo/textdiffusion/data
+wrap: True
+streaming: False

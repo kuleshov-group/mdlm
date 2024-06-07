@@ -1,0 +1,11 @@
+name: tiny
+type: ddit
+hidden_size: 512
+cond_dim: 128
+length: 1024
+n_blocks: 8
+n_heads: 8
+scale_by_sigma: True
+dropout: 0.1
+causal: True
+tie_word_embeddings: False

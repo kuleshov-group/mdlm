@@ -1,0 +1,7 @@
+_target_: utils.CosineDecayWarmupLRScheduler
+t_in_epochs: False
+t_initial: ${eval:${trainer.max_steps}-${.warmup_t}}
+warmup_prefix: True
+warmup_lr_init: 1e-6
+warmup_t: ${eval:0.1*${trainer.max_steps}}
+lr_min: 1e-6

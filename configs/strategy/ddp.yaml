@@ -1,0 +1,2 @@
+_target_: lightning.pytorch.strategies.DDPStrategy
+find_unused_parameters: false  # TODO(yair): this seems hacky, I think if things are correct we shouldn't need this
