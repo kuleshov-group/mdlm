@@ -93,8 +93,6 @@ def generate_samples(config, logger, tokenizer):
     model.ema = None
   stride_length = config.sampling.stride_length
   num_strides = config.sampling.num_strides
-  f = open(f'/home/sss284/text-diffusion/{config.sampling.steps}-samples.txt', 'w') 
-  count = 1
   for _ in range(config.sampling.num_sample_batches):
     if config.sampling.semi_ar:
       _, intermediate_samples, _ = model.restore_model_and_semi_ar_sample(
@@ -111,12 +109,7 @@ def generate_samples(config, logger, tokenizer):
       samples = model.restore_model_and_sample(
         num_steps=config.sampling.steps)
       text_samples = model.tokenizer.batch_decode(samples)
-      for sample in text_samples:
-        f.write(f'\nsample {count}\n')
-        f.write(sample)
-        count += 1
-      # model.compute_generative_perplexity(text_samples)
-  f.close()
+      model.compute_generative_perplexity(text_samples)
   print('Text samples:', text_samples)
   if not config.sampling.semi_ar:
     print('Generative perplexity:',
