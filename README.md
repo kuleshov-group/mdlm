@@ -9,7 +9,7 @@ By [Subham Sekhar Sahoo](https://s-sahoo.github.io), [Marianne Arriola](https://
 
 ![graphical_abstract_updated_2](https://github.com/s-sahoo/mdlm/assets/16799748/b0cab23a-d966-45fa-a3ad-be972b23a98a)
 
-We introduce MDLM, a masked discrete diffusion model that features
+We introduce *MDLM*, a **M**asked discrete **D**iffusion **L**anguage **M**odel that features
 a novel (SUBS)titution based
 parameterization which simplifies the absorbing state diffusion
 loss to a mixture of
@@ -18,18 +18,30 @@ SOTA perplexity numbers on LM1B and OpenWebText among diffusion models while ach
 
 
 In this repo, we release:
-* The MDLM framework.
-* Implementations of numerous baselines [Examples](#baselines):
-  * Autoregressive model that matches the SOTA AR performance on LM1B.
-  * Score Entropy Based Discrete Diffusion [SEDD](https://arxiv.org/abs/2310.16834).
-  * An efficient implementation of the absorbing state [D3PM](https://arxiv.org/abs/2107.03006) that beats the previous state of the art diffuision model SEDD on LM1B.
+* **The MDLM framework.**
+  1. SUBStitution based parameterization
+  2. Simplified loss calculation for masked diffusion processes
+* **Baseline implementations** [[Examples]](#baselines):
+  1. Autoregressive model that matches the SOTA AR performance on LM1B.
+  2. Score Entropy Based Discrete Diffusion [SEDD](https://arxiv.org/abs/2310.16834).
+  3. An efficient implementation of the absorbing state [D3PM](https://arxiv.org/abs/2107.03006) that beats the previous state of the art diffuision model SEDD on LM1B.
+* **Samplers**
+  1. Ancestral sampling as proposed in D3PM.
+  2. Analytic sampler as proposed in SEDD.
+  3. Our proposed efficient sampler that
+     - makes MDLM **~3-4x** faster than the existing diffusion models. [[Example]](#sample-gen)
+     - supports semi-autoregressive (SAR) generation.  [[Example]](#semi-ar-gen)
 
-* Numerous samplers.
-  * Ancestral sampling as proposed in D3PM.
-  * Analytic sampler as proposed in SEDD.
-  * Our proposed efficient sampler that
-    * makes MDLM **~3-4x** faster than the existing diffusion models. [[Example]](#sample-gen)
-    * supports semi-autoregressive (SAR) generation.  [[Example]](#semi-ar-gen)
+<a name="code-organization"></a>
+## Code Organization
+1. ```main.py```: Routines for training and evaluation
+2. ```noise_schedule.py```: Noise schedules
+3. ```diffusion.py```: Forward/reverse diffusion
+4. ```dataloader.py```: Dataloaders
+5. ```utils.py```: LR scheduler, logging, `fsspec` handling
+6. ```models/```: Denoising network architectures. Supports [DiT](https://arxiv.org/abs/2212.09748), AR transformer, and [Mamba](https://arxiv.org/abs/2312.00752)
+7. ```configs/```: Config files for datasets/denoising networks/noise schedules/LR schedules
+8. ```scripts/```: Shell scripts for training/evaluation
 
 
 <a name="getting_started"></a>
@@ -40,11 +52,6 @@ To get started, create a conda environment containing the required dependencies.
 
 ```bash
 conda env create -f requirements.yaml
-```
-
-Activate the environment.
-
-```bash
 conda activate mdlm
 ```
 
@@ -76,9 +83,9 @@ We also provide sample `slurm` scripts for launching pre-training and downstream
 The argument to `sampling.predictor` specifies the sampler which takes one of the following values:
 * `ddpm_cache`: our proposed sampler that's **~3-4x** faster than the samplers propsed in D3PM and SEDD.
 * `ddpm`: Ancestral sampling proposed in D3PM.
-* `analytic`: Anlytic sampler proposed in SEDD.
+* `analytic`: Analytic sampler proposed in SEDD.
 
-In the following table we report Wall clock time to generate 64 samples on a single A5000 GPU with `batch_size=1`. $T$ denotes the time discretization of the reverse process.
+In the following table we report wall clock time to generate 64 samples on a single A5000 GPU with `batch_size=1`. $T$ denotes the time discretization of the reverse process.
 |                         | $T=5k (\downarrow)$ | $T=10k (\downarrow)$ |
 |-------------------------|---------------------|----------------------|
 | **SEDD**                | 127.1                | 229.3                |
@@ -114,9 +121,9 @@ python main.py \
   backbone=dit
 ```
 
-### Semi-ar sample generation
-<a name="semi-ar"></a>
-MDLM can also generate samples in a Semi-ar manner.
+### Semi-AR sample generation
+<a name="semi-ar-gen"></a>
+MDLM can also generate samples of arbitrary length in a semi-autoregressive (SAR) manner.
 We generate 200 sequences of length 2048 tokens on a single `3090` GPU and evaluate generative perplexity under a pre-trained GPT-2 model. In the below table we find that in addition to achieving better generative perplexity, MDLM enables **25-30x** faster SAR decoding relative to [SSD-LM](https://arxiv.org/abs/2210.17432).
 
 |                     | Gen. PPL ($\downarrow$) | Sec/Seq ($\downarrow$) |
@@ -143,7 +150,6 @@ python main.py \
   backbone=hf_dit
 ```
 
-
 ### Train
 To train MDLM from scratch on OpenWebText use the following command:
 ```
@@ -160,7 +166,7 @@ python main.py \
 The arguments `loader.batch_size` and `loader.eval_batch_size` allow you to control the batch size per GPU. If `loader.batch_size * num_gpus` is less than the global_batch_size, PyTorch Lightning will resort to gradient accumulation. You can also launch a training job on Slurm using the command: `sbatch scripts/train_owt_mdlm.sh`. The slurm scripts to train the Auto-regressive and SEDD baselines are as follows respectively: [`scripts/train_lm1b_ar.sh`](scripts/train_lm1b_ar.sh), [`scripts/train_owt_sedd.sh`](scripts/train_owt_sedd.sh).
 
 ### Eval 
-### MDLM
+To compute test perplexity, use `mode=ppl_eval`. Example scripts provided in `scripts/`. An example command for perplexity evaluation on OpenWebText is:
 ```
 python main.py \
   mode=ppl_eval \
@@ -175,9 +181,9 @@ python main.py \
   +wandb.offline=true
 ```
 
-### Baselines
+### Baseline evaluation
 <a name="baselines"></a>
-We release the checkpoints for the baselines: SEDD and AR trained on OpenWebText in this [Google Drive folder](https://drive.google.com/drive/folders/16LuuptK7Xfk-vzhQYZBZ0SA-B-BFluau?usp=sharing). Download the checkpoints: `ar.ckpt`, `sedd.ckpt` and use the following commands to compute perplexity on the test-split:
+We release the checkpoints for the baselines: SEDD and AR trained on OpenWebText in this [Google Drive folder](https://drive.google.com/drive/folders/16LuuptK7Xfk-vzhQYZBZ0SA-B-BFluau?usp=sharing). Download the checkpoints: `ar.ckpt`, `sedd.ckpt` and use the following commands to compute test perplexity:
 #### AR
 ```bash
 python main.py \
@@ -210,3 +216,15 @@ python main.py \
 
 ### Acknowledgements
 This repository was built off of [SEDD](https://github.com/louaaron/Score-Entropy-Discrete-Diffusion).
+
+## Citation
+```
+@misc{sahoo2024simple,
+      title={Simple and Effective Masked Diffusion Language Models}, 
+      author={Subham Sekhar Sahoo and Marianne Arriola and Yair Schiff and Aaron Gokaslan and Edgar Marroquin and Justin T Chiu and Alexander Rush and Volodymyr Kuleshov},
+      year={2024},
+      eprint={2406.07524},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+```
