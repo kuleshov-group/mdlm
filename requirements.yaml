@@ -1,4 +1,4 @@
-name: subs
+name: mdlm
 channels:
   - pytorch
   - anaconda

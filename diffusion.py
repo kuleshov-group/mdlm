@@ -748,7 +748,8 @@ class Diffusion(L.LightningModule):
       #     log score(x_i, t) = - log k
       #     where k = exp(- sigma) / (1 - exp(- sigma))
       
-      log_k = - torch.log(torch.expm1(sigma)).squeeze()
+      log_k = - torch.log(torch.expm1(sigma)).squeeze(-1)
+      assert log_k.ndim == 1
       
       masked_score = model_output + log_k[:, None, None]
       masked_score[:, :, self.mask_index] = 0
