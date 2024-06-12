@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Simple and Effective Masked Diffusion Language Models"
+doi: "10.48550/arXiv.2406.07524"
+authors:
+  - family-names: "Sahoo"
+    given-names: "Subham Sekhar"
+  - family-names: "Arriola"
+    given-names: "Marianne"
+  - family-names: "Schiff"
+    given-names: "Yair"
+  - family-names: "Gokaslan"
+    given-names: "Aaron"
+  - family-names: "Marroquin"
+    given-names: "Edgar"
+  - family-names: "Chiu"
+    given-names: "Justin T"
+  - family-names: "Rush"
+    given-names: "Alexander"
+  - family-names: "Kuleshov"
+    given-names: "Volodymyr"
+date-released: 2024-06-11
+version: "arXiv:2406.07524v1"
+
