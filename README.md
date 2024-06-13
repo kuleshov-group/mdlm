@@ -3,7 +3,7 @@ By [Subham Sekhar Sahoo](https://s-sahoo.github.io), [Marianne Arriola](https://
 [Justin T Chiu](https://justinchiu.netlify.app), [Alexander Rush](https://rush-nlp.com), [Volodymyr Kuleshov](https://www.cs.cornell.edu/~kuleshov/)
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/18nC6q7dWq154fI1BXPLwmtnS7Zvbrv6p?usp=sharing/)
-[![deploy](https://img.shields.io/badge/Blog%20%20-8A2BE2)](https://github.com/huggingface/datasets-tagging/actions/workflows/deploy.yml)
+[![deploy](https://img.shields.io/badge/Blog%20%20-8A2BE2)](https://s-sahoo.com/mdlm/)
 [![arXiv](https://img.shields.io/badge/arXiv-2406.07524-red.svg)](https://arxiv.org/abs/2406.07524)
 [![deploy](https://img.shields.io/badge/Huggingface%20-MDLM%20-blue)](https://huggingface.co/kuleshov-group/mdlm-owt)
 
