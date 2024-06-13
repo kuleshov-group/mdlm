@@ -62,7 +62,7 @@ mkdir watch_folder
 ```
 and run the training as a batch job:
 ```bash
-sbatch scripts/train_owt_sedd.sh
+sbatch scripts/train_owt_mdlm.sh
 ```
 
 ### Checkpoints
