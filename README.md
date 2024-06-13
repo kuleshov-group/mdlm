@@ -89,7 +89,7 @@ In the following table we report wall clock time to generate 64 samples on a sin
 |                         | $T=5k (\downarrow)$ | $T=10k (\downarrow)$ |
 |-------------------------|---------------------|----------------------|
 | **SEDD**                | 127.1                | 229.3                |
-| **MDLM** + `ddpm`            | 206.6                | 229.3                |
+| **MDLM** + `ddpm`            | 206.6                | 206.6                |
 | **MDLM** +`ddpm_cache` | **40.1**           | **60.4**             |
 
 
