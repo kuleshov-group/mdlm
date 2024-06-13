@@ -154,7 +154,6 @@ python main.py \
 To train MDLM from scratch on OpenWebText use the following command:
 ```
 python main.py \
-  trainer.max_steps=1000000 \
   model=small \
   data=openwebtext-split \
   wandb.name=mdlm-owt \
