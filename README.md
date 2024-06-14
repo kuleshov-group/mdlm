@@ -88,9 +88,9 @@ The argument to `sampling.predictor` specifies the sampler which takes one of th
 In the following table we report wall clock time to generate 64 samples on a single A5000 GPU with `batch_size=1`. $T$ denotes the time discretization of the reverse process.
 |                         | $T=5k (\downarrow)$ | $T=10k (\downarrow)$ |
 |-------------------------|---------------------|----------------------|
-| **SEDD**                | 127.1                | 229.3                |
-| **MDLM** + `ddpm`            | 206.6                | 206.6                |
-| **MDLM** +`ddpm_cache` | **40.1**           | **60.4**             |
+| **SEDD**                | 127.1               | 229.3                |
+| **MDLM** + `ddpm`       | 113.8               | 206.6                |
+| **MDLM** +`ddpm_cache`  | **40.1**            | **60.4**             |
 
 
 To generate samples from a pre-trained model use one of the following commands:
