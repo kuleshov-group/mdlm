@@ -104,7 +104,7 @@ class Diffusion(L.LightningModule):
         mask_index=self.mask_index)
     elif self.config.backbone == 'hf_dit':
       self.backbone = transformers.AutoModelForMaskedLM.from_pretrained(
-        config.eval.checkpoint_path)
+        config.eval.checkpoint_path, trust_remote_code=True)
     else:
       raise ValueError(
         f'Unknown backbone: {self.config.backbone}')
