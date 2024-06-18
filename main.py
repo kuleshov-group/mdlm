@@ -84,7 +84,7 @@ def _print_batch(train_ds, valid_ds, tokenizer, k=64):
 
 
 def generate_samples(config, logger, tokenizer):
-  logger.info('Starting Eval.')
+  logger.info('Generating samples.')
   model = _load_from_checkpoint(config=config,
                                 tokenizer=tokenizer)
   model.gen_ppl_metric.reset()
@@ -114,6 +114,7 @@ def generate_samples(config, logger, tokenizer):
   if not config.sampling.semi_ar:
     print('Generative perplexity:',
           model.gen_ppl_metric.compute())
+  return text_samples
 
 def _ppl_eval(config, logger, tokenizer):
   logger.info('Starting Zero Shot Eval.')
