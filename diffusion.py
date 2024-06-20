@@ -418,7 +418,6 @@ class Diffusion(L.LightningModule):
          and self.config.eval.generate_samples
          and not self.parameterization == 'ar'):
       # TODO(justin): implement sampling and kv cache for AR
-      perplexities = []
       samples, text_samples = None, None
       for _ in range(
         self.config.sampling.num_sample_batches):
@@ -426,9 +425,7 @@ class Diffusion(L.LightningModule):
         # Decode the samples to be re-tokenized by eval model
         text_samples = self.tokenizer.batch_decode(samples)
         if self.config.eval.compute_generative_perplexity:
-          perplexities.append(
-            self.compute_generative_perplexity(
-              text_samples).cpu())
+          self.compute_generative_perplexity(text_samples)
       if self.trainer.global_rank == 0 and hasattr(
         self.trainer.logger, 'log_table'):
         # Log the last generated samples
@@ -439,11 +436,6 @@ class Diffusion(L.LightningModule):
           columns=['Generated Samples'],
           data=[[s] for s in text_samples])
       if self.config.eval.compute_generative_perplexity:
-        self.log(name='val/gen_perplexity_incorrect',
-                 value=np.mean(perplexities),
-                 on_epoch=True,
-                 on_step=False,
-                 sync_dist=True)
         self.log('val/gen_ppl',
                  self.gen_ppl_metric,
                  on_epoch=True,
