@@ -73,7 +73,7 @@ trainer:
   log_every_n_steps: 10
   limit_train_batches: 1.0   # train on full dataset, can be used to toggle quick run
   limit_val_batches: 1.0     # validate on full dataset, can be used to toggle quick run
-  val_check_interval: 100
+  val_check_interval: 10000
 
 wandb:
   project: text-diffusion
