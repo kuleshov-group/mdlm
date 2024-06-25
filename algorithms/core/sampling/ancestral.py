@@ -22,7 +22,6 @@ class AncestralSampler(torch.nn.Module):
     raise NotImplementedError
 
   # also, these attributes must exist:
-  # * self.config
   # * self.mask_index
 
   # core sampling logic

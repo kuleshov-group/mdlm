@@ -1,6 +1,8 @@
 import math
 import torch
 import torchmetrics
+from dataclasses import dataclass
+from torch import Tensor
 
 LOG2 = math.log(2)
 

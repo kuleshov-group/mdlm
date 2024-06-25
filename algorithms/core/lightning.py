@@ -21,6 +21,9 @@ class LightningDiffusion(L.LightningModule):
     self.config = config
     self.tokenizer = tokenizer
 
+    self.fast_forward_epochs = None
+    self.fast_forward_batches = None
+
     # metrics will automatically reset at end of epoch
     metrics = torchmetrics.MetricCollection({
       active_metrics
