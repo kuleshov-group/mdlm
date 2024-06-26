@@ -210,6 +210,7 @@ python main.py \
   model.length=1024 \
   eval.checkpoint_path=/path/to/checkpoint/sedd.ckpt \
   time_conditioning=True \
+  sampling.predictor=analytic \
   +wandb.offline=true
 ```
 

@@ -25,5 +25,6 @@ srun python -u -m main \
   model.length=128 \
   eval.compute_generative_perplexity=True \
   sampling.steps=1000 \
+  sampling.predictor=ddpm \
   time_conditioning=True \
   T=1000
