@@ -1,3 +1,4 @@
+import abc
 import torch
 
 def _sample_categorical(categorical_probs):
@@ -11,23 +12,26 @@ def _unsqueeze(x, reference):
     * x.shape,
     * ((1,) * (len(reference.shape) - len(x.shape))))
 
-class AnalyticSampler():
+class AnalyticSampler(abc.ABC):
   def __init__(
     self,
     config,
   ):
-    super().__init__()
     self.config = config
 
   # abstract methods that must be implemented by child classes
+  @abc.abstractmethod
   def forward(self, x, sigma_t):
     raise NotImplementedError()
 
-  def noise(self, x, sigma_t):
-    raise NotImplementedError()
+  # TODO: FIXME: should be made inot abstract property
+  # @abc.abstractmethod
+  # def noise(self, x, sigma_t):
+  #   raise NotImplementedError()
 
-  def get_score(self, x, sigma):
-    raise NotImplementedError()
+  # @abc.abstractmethod
+  # def get_score(self, x, sigma):
+  #   raise NotImplementedError()
 
   # also, these attributes must exist:
   # * self.config

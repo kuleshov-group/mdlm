@@ -8,13 +8,13 @@ import noise_schedule
 import utils
 
 from .core.diffusion import CoreDiffusion
-from .core.lightning import LightningDiffusion
+from .core.lightning import LightningHooks
 from .core.sampling.analytic import AnalyticSampler
 from .core.genppl import GenPPLEvaluator
 
 
 class SEDD(
-  CoreDiffusion, LightningDiffusion, AnalyticSampler, GenPPLEvaluator
+  CoreDiffusion, LightningHooks, AnalyticSampler, GenPPLEvaluator
 ):
   def __init__(
     self,
@@ -24,11 +24,14 @@ class SEDD(
     CoreDiffusion.__init__(
       self, 
       config, 
-      mask_token_id=tokenizer.mask_token_id
+      vocab_size=tokenizer.vocab_size,
+      mask_token_id=tokenizer.mask_token_id,
+      pad_token_id=tokenizer.pad_token_id
     )
-    LightningDiffusion.__init__(self, config, tokenizer)
+    LightningHooks.__init__(self, config, tokenizer)
     AnalyticSampler.__init__(self, config)
     GenPPLEvaluator.__init__(self, config)
+    self.tokenizer = tokenizer
 
   def _sedd_parameterization(self, logits, xt, sigma):
     esigm1_log = torch.where(

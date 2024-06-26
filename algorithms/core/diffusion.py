@@ -1,46 +1,41 @@
 import itertools
 import numpy as np
 import torch
-import transformers
 
 import models
 import noise_schedule
 import utils
 
+from .lightning import LightningDiffusion
+from .metrics import Loss
 
-class CoreDiffusion(torch.nn.Module):
+class CoreDiffusion(LightningDiffusion):
   def __init__(
     self,
     config,
     vocab_size: int,
     mask_token_id=None,
-    pad_token_id=None
-    # tokenizer: transformers.PreTrainedTokenizer
+    pad_token_id=None,
+    noise_dtype=torch.float32
   ):
-    super().__init__()
+    LightningDiffusion.__init__(self, config)
     self.save_hyperparameters()
     self.config = config
 
-    # FIXE: TODO: tokenizer should not be here
-    # worst case, it should be in LightningDiffusion (also not ideal)
-    # self.tokenizer = tokenizer 
-    # self.vocab_size = self.tokenizer.vocab_size
-    self.vocab_size = self.vocab_size
+    self.vocab_size = vocab_size
     self.sampler = self.config.sampling.predictor
     
     self.antithetic_sampling = self.config.training.antithetic_sampling
     self.importance_sampling = self.config.training.importance_sampling
     self.change_of_variables = self.config.training.change_of_variables
+    self.parameterization = self.config.parameterization
     
     # save mask token id
-    # if (not hasattr(self.tokenizer, 'mask_token')
-    #     or self.tokenizer.mask_token is None):
     if mask_token_id is None:
       self.mask_index = self.vocab_size
       self.vocab_size += 1
     else:
       self.mask_index = mask_token_id
-    self.parameterization = self.config.parameterization
 
     # set backbone
     if self.config.backbone == 'dit':
@@ -64,7 +59,7 @@ class CoreDiffusion(torch.nn.Module):
         f'Unknown backbone: {self.config.backbone}')
 
     self.noise = noise_schedule.get_noise(
-      self.config, dtype=self.dtype
+      self.config, dtype=noise_dtype
     )
     if self.config.training.ema > 0:
       self.ema = models.ema.ExponentialMovingAverage(
@@ -77,7 +72,7 @@ class CoreDiffusion(torch.nn.Module):
     self.T = self.config.T    
     self.sampling_eps = self.config.training.sampling_eps
     self.time_conditioning = self.config.time_conditioning
-    self._validate_configuration()
+    self.subs_masking = self.config.subs_masking
 
   # main abstract methods that need to be implemented by subclasses:
 
@@ -212,7 +207,7 @@ class CoreDiffusion(torch.nn.Module):
       checkpoint['ema'] = self.ema.state_dict()
     return checkpoint
 
-  def move_ema_shadow_params_to_device():
+  def move_ema_shadow_params_to_device(self):
     if self.ema:
       self.ema.move_shadow_params_to_device(self.device)
 

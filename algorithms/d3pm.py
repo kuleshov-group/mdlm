@@ -8,13 +8,13 @@ import noise_schedule
 import utils
 
 from .core.diffusion import CoreDiffusion
-from .core.lightning import LightningDiffusion
+from .core.lightning import LightningHooks
 from .core.sampling.ancestral import AncestralSampler
 from .core.genppl import GenPPLEvaluator
 
 
 class D3PM(
-  CoreDiffusion, LightningDiffusion, AncestralSampler, GenPPLEvaluator
+  CoreDiffusion, LightningHooks, AncestralSampler, GenPPLEvaluator
 ):
   def __init__(
     self,
@@ -24,12 +24,15 @@ class D3PM(
     CoreDiffusion.__init__(
       self, 
       config, 
-      mask_token_id=tokenizer.mask_token_id
+      vocab_size=tokenizer.vocab_size,
+      mask_token_id=tokenizer.mask_token_id,
+      pad_token_id=tokenizer.pad_token_id
     )
-    LightningDiffusion.__init__(self, config, tokenizer)
+    LightningHooks.__init__(self, config, tokenizer)
     AncestralSampler.__init__(self, config)
     GenPPLEvaluator.__init__(self, config)
     self.neg_infinity = -1000000.0
+    self.tokenizer = tokenizer
 
   def _d3pm_parameterization(self, logits):
     if self.subs_masking:
@@ -75,6 +78,17 @@ class D3PM(
     L_vb = L_vb_masked * (xt == self.mask_index)
 
     return self.T * L_vb
+
+  def _reconstruction_loss(self, x0):
+    t0 = torch.zeros(x0.shape[0], dtype=self.dtype,
+                     device=self.device)
+    assert self.config.noise.type == 'loglinear'
+    # The above assert is for d3pm parameterization
+    unet_conditioning = self.noise(t0)[0][:, None]
+    model_output_t0 = self.forward(x0, unet_conditioning)
+    return - torch.gather(input=model_output_t0,
+                          dim=-1,
+                          index=x0[:, :, None]).squeeze(-1)
 
   def _diffusion_elbo(self, x0):
     t = self._sample_t(x0.shape[0], x0.device)

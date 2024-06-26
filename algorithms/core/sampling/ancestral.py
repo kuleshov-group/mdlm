@@ -1,3 +1,4 @@
+import abc
 import torch
 
 def _sample_categorical(categorical_probs):
@@ -6,20 +7,22 @@ def _sample_categorical(categorical_probs):
     - (torch.rand_like(categorical_probs) + 1e-10).log())
   return (categorical_probs / gumbel_norm).argmax(dim=-1)
 
-class AncestralSampler():
+class AncestralSampler(abc.ABC):
   def __init__(
     self,
     config,
   ):
-    super().__init__()
     self.config = config
 
   # abstract methods that must be implemented by child classes
+  @abc.abstractmethod
   def forward(self, x, sigma_t):
     raise NotImplementedError
 
-  def noise(self, x, sigma_t):
-    raise NotImplementedError
+  # TODO: FIXME: should be made inot abstract property
+  # @abc.abstractmethod
+  # def noise(self, x, sigma_t):
+  #   raise NotImplementedError()
 
   # also, these attributes must exist:
   # * self.mask_index

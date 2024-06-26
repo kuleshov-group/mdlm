@@ -12,6 +12,8 @@ import dataloader
 import diffusion
 import utils
 
+from algorithms import get_diffusion, get_diffusion_from_checkpoint
+
 omegaconf.OmegaConf.register_new_resolver(
   'cwd', os.getcwd)
 omegaconf.OmegaConf.register_new_resolver(
@@ -23,15 +25,11 @@ omegaconf.OmegaConf.register_new_resolver(
 
 
 def _load_from_checkpoint(config, tokenizer):
-  if 'hf' in config.backbone:
-    return diffusion.Diffusion(
-      config, tokenizer=tokenizer).to('cuda')
-  
-  return diffusion.Diffusion.load_from_checkpoint(
-    config.eval.checkpoint_path,
+  return get_diffusion_from_checkpoint(
+    checkpoint_path=config.eval.checkpoint_path,
     tokenizer=tokenizer,
-    config=config)
-
+    config=config
+  )
 
 @L.pytorch.utilities.rank_zero_only
 def _print_config(
@@ -171,8 +169,10 @@ def _train(config, logger, tokenizer):
     config, tokenizer)
   _print_batch(train_ds, valid_ds, tokenizer)
 
-  model = diffusion.Diffusion(
-    config, tokenizer=valid_ds.tokenizer)
+  # model = diffusion.Diffusion(
+  #   config, tokenizer=valid_ds.tokenizer)
+
+  model = get_diffusion(config, valid_ds.tokenizer)
 
   trainer = hydra.utils.instantiate(
     config.trainer,

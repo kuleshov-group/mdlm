@@ -2,12 +2,13 @@ import torch
 import transformers
 
 from .core.diffusion import CoreDiffusion
-from .core.lightning import LightningDiffusion
+from .core.lightning import LightningHooks
 from .core.genppl import GenPPLEvaluator
+from .core.metrics import Loss
 
 
 class AR(
-  CoreDiffusion, LightningDiffusion, GenPPLEvaluator
+  CoreDiffusion, LightningHooks, GenPPLEvaluator
 ):
   def __init__(
     self,
@@ -17,10 +18,13 @@ class AR(
     CoreDiffusion.__init__(
       self, 
       config, 
-      mask_token_id=tokenizer.mask_token_id
+      vocab_size=tokenizer.vocab_size,
+      mask_token_id=tokenizer.mask_token_id,
+      pad_token_id=tokenizer.pad_token_id
     )
-    LightningDiffusion.__init__(self, config, tokenizer)
+    LightningHooks.__init__(self, config, tokenizer)
     GenPPLEvaluator.__init__(self, config)
+    self.tokenizer = tokenizer
 
   def forward(self, x, sigma):
     """Returns log score."""
@@ -29,9 +33,9 @@ class AR(
       logits = self.backbone(x, sigma)
     return logits
 
-  def _loss(self, x0, attention_mask):
+  def _loss(self, x0, token_mask):
     input_tokens, output_tokens, token_mask = (
-      self._get_token_mask(x0, attention_mask)
+      self._get_token_mask(x0, token_mask)
     )
     logprobs = self.backbone(input_tokens, None)
     loss = - logprobs.gather(
@@ -47,10 +51,11 @@ class AR(
                 nlls=nlls,
                 token_mask=token_mask)
 
-  def _get_token_mask(self, x0, attention_mask):
+  def _get_token_mask(self, x0, token_mask):
     input_tokens = x0[:, :-1]
     output_tokens = x0[:, 1:]
-    new_attention_mask = attention_mask[:, 1:]
+    new_token_mask = token_mask[:, 1:]
+    return input_tokens, output_tokens, new_token_mask
 
   def _ar_sampler(self, bsz):
     # precompute token buffer

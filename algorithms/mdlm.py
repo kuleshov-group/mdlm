@@ -19,9 +19,8 @@ class MDLM(D3PM):
     D3PM.__init__(
       self, 
       config, 
-      mask_token_id=tokenizer.mask_token_id
+      tokenizer=tokenizer
     )
-    self.subs_masking = self.config.subs_masking
 
   def _subs_parameterization(self, logits, xt):
     # log prob at the mask index = - infinity
