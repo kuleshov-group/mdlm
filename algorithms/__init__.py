@@ -1,4 +1,4 @@
-from .sedd import SDD
+from .sedd import SEDD
 from .d3pm import D3PM
 from .mdlm import MDLM
 from .ar import AR

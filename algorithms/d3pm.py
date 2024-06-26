@@ -104,11 +104,11 @@ class D3PM(
         model_output=model_output, xt=xt, x0=x0, t=t)
       reconstruction_loss = self._reconstruction_loss(x0)
       return reconstruction_loss + diffusion_loss
-    elif if self.T == 0:
+    elif self.T == 0:
       # we are in continuous time    
       raise NotImplementedError()
 
-    @torch.no_grad()
+  @torch.no_grad()
   def _sample(self, num_steps=None, eps=1e-5):
     """Generate samples from the model."""
     batch_size_per_gpu = self.config.loader.eval_batch_size

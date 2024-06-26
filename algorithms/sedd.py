@@ -72,7 +72,7 @@ class SEDD(
     for i in range(num_steps):
       t = timesteps[i] * torch.ones(
         x.shape[0], 1, device=self.device)
-        x = self._analytic_update(x, t, dt)
+      x = self._analytic_update(x, t, dt)
 
     if self.config.sampling.noise_removal:
       t = timesteps[-1] * torch.ones(x.shape[0], 1,

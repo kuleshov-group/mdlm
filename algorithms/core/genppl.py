@@ -10,20 +10,20 @@ class GenPPLEvaluator():
     self,
     config,
   ):  
-  self.config = config
-  self.gen_ppl_eval_model_name_or_path = (
-    self.config.eval.gen_ppl_eval_model_name_or_path
-  )
+    self.config = config
+    self.gen_ppl_eval_model_name_or_path = (
+      self.config.eval.gen_ppl_eval_model_name_or_path
+    )
 
-  # generative perplexity
-  self.gen_ppl_metric = Perplexity()
-  self.eval_model_tokenizer = transformers.AutoTokenizer.\
-    from_pretrained(self.gen_ppl_eval_model_name_or_path)
-  if self.eval_model_tokenizer.pad_token is None:
-    self.eval_model_tokenizer.pad_token = \
-        self.eval_model_tokenizer.eos_token
-    self.eval_model_tokenizer.pad_token_id = \
-        self.eval_model_tokenizer.eos_token_id
+    # generative perplexity
+    self.gen_ppl_metric = Perplexity()
+    self.eval_model_tokenizer = transformers.AutoTokenizer.\
+      from_pretrained(self.gen_ppl_eval_model_name_or_path)
+    if self.eval_model_tokenizer.pad_token is None:
+      self.eval_model_tokenizer.pad_token = \
+          self.eval_model_tokenizer.eos_token
+      self.eval_model_tokenizer.pad_token_id = \
+          self.eval_model_tokenizer.eos_token_id
 
   @torch.no_grad()
   def eval_retokenize(self, text_samples, max_length):

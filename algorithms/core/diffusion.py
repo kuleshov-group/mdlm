@@ -93,10 +93,8 @@ class CoreDiffusion(torch.nn.Module):
 
   # core diffusion methods:
 
-  def _loss(self, x0, attention_mask):
-    input_tokens, token_mask = x0, attention_mask
-
-    elbo = self._diffusion_elbo(input_tokens)
+  def _loss(self, x0, token_mask):
+    elbo = self._diffusion_elbo(x0)
     nlls = elbo * token_mask
     count = token_mask.sum()
 
@@ -162,14 +160,14 @@ class CoreDiffusion(torch.nn.Module):
 
   # methods that set train vs. eval mode
 
-  def train_mode(self, ema=self.ema):
+  def train_mode(self, ema):
     """Set model to train mode"""
     if ema:
       self.restore_ema()
     self.backbone.train()
     self.noise.train()
 
-  def eval_mode(self, ema=self.ema):
+  def eval_mode(self, ema):
     """Set model to eval mode"""
     if ema:
       self.store_ema()
@@ -181,10 +179,6 @@ class CoreDiffusion(torch.nn.Module):
       self.backbone.parameters(),
       self.noise.parameters()
     )
-
-    logprobs = self.backbone(input_tokens, None)
-      loss = - logprobs.gather(
-        -1, output_tokens[:, :, None])[:, :, 0]
 
   # abstract interface over EMA
 
@@ -228,9 +222,9 @@ class CoreDiffusion(torch.nn.Module):
   def restore_model_and_sample(self, num_steps, eps=1e-5):
     """Generate samples from the model."""
     # Lightning auto-casting is not working in this method for some reason
-    self.eval_mode()
+    self.eval_mode(ema=self.ema)
     samples = self._sample(num_steps=num_steps, eps=eps)
-    self.train_mode()
+    self.train_mode(ema=self.ema)
     return samples
 
   # TODO: FIXME: this should be merged with regular sampling functions
@@ -239,12 +233,12 @@ class CoreDiffusion(torch.nn.Module):
       self, stride_length, num_strides, dt=0.001):
     """Generate samples from the model."""
     # Lightning auto-casting is not working in this method for some reason
-    self.eval_mode()
+    self.eval_mode(ema=self.ema)
     sampling_steps, samples, sequence_lengths = self.semi_ar_sample(
       n_samples=self.config.loader.eval_batch_size,
       stride_length=stride_length,
       num_strides=num_strides, 
       dt=dt
     )
-    self.train_mode()
+    self.train_mode(ema=self.ema)
     return sampling_steps, samples, sequence_lengths  

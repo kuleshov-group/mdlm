@@ -11,11 +11,11 @@ def _unsqueeze(x, reference):
     * x.shape,
     * ((1,) * (len(reference.shape) - len(x.shape))))
 
-class AnalyticSampler(torch.nn.Module):
+class AnalyticSampler():
   def __init__(
     self,
     config,
-  )
+  ):
     super().__init__()
     self.config = config
 

@@ -6,11 +6,11 @@ def _sample_categorical(categorical_probs):
     - (torch.rand_like(categorical_probs) + 1e-10).log())
   return (categorical_probs / gumbel_norm).argmax(dim=-1)
 
-class AncestralSampler(torch.nn.Module):
+class AncestralSampler():
   def __init__(
     self,
     config,
-  )
+  ):
     super().__init__()
     self.config = config
 

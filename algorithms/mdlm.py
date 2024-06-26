@@ -85,7 +85,7 @@ class MDLM(D3PM):
       elif self.parameterization == 'subs':
         reconstruction_loss = 0
       return reconstruction_loss + discrete_time_diff_loss
-    elif if self.T == 0:
+    elif self.T == 0:
       # we are in continuous time    
       log_p_theta = torch.gather(
         input=model_output,
@@ -99,7 +99,7 @@ class MDLM(D3PM):
       return - log_p_theta * (
         dsigma / torch.expm1(sigma))[:, None]
     else:
-      raise ValueError('Invalid setting for T')
+      raise ValueError(self.T)
 
   def get_score(self, x, sigma):
     model_output = self.forward(x, sigma)

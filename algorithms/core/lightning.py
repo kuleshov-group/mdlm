@@ -3,6 +3,7 @@ import torch
 import hydra.utils
 import lightning as L
 import torchmetrics
+import transformers
 import dataloader
 from .metrics import NLL, BPD, Perplexity
 
@@ -20,6 +21,7 @@ class LightningDiffusion(L.LightningModule):
   ):
     self.config = config
     self.tokenizer = tokenizer
+    self.ema_status = (self.config.training.ema > 0)
 
     self.fast_forward_epochs = None
     self.fast_forward_batches = None
@@ -174,7 +176,7 @@ class LightningDiffusion(L.LightningModule):
     return loss
 
   def on_validation_epoch_start(self):
-    self.eval_mode()
+    self.eval_mode(ema=self.ema_status)
     assert self.valid_metrics.nll.mean_value == 0
     assert self.valid_metrics.nll.weight == 0
 
