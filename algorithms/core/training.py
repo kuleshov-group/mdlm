@@ -3,10 +3,8 @@ import abc
 import torch
 import hydra.utils
 import lightning as L
-import dataloader
 
-
-class LightningAlgorithm(L.LightningModule, abc.ABC):
+class CoreLightning(L.LightningModule, abc.ABC):
   def __init__(
     self,
     config,

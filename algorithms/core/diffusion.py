@@ -1,15 +1,17 @@
+import abc
 import itertools
 import numpy as np
 import torch
+import lightning as L
 
 import models
 import noise_schedule
 import utils
 
-from .training import LightningAlgorithm
+from .training import CoreLightning
 from .metrics import Loss
 
-class CoreDiffusion(LightningAlgorithm):
+class CoreDiffusion(CoreLightning, abc.ABC):
   def __init__(
     self,
     config,
@@ -18,7 +20,7 @@ class CoreDiffusion(LightningAlgorithm):
     pad_token_id=None,
     noise_dtype=torch.float32
   ):
-    LightningAlgorithm.__init__(self, config)
+    CoreLightning.__init__(self, config)
     self.save_hyperparameters()
     self.config = config
 
@@ -76,13 +78,16 @@ class CoreDiffusion(LightningAlgorithm):
 
   # main abstract methods that need to be implemented by subclasses:
 
+  @abc.abstractmethod
   def forward(self, x, sigma):
     raise NotImplementedError()
 
+  @abc.abstractmethod
   def _sample(self, num_steps=None, eps=1e-5):
     """Generate samples from the model."""
     raise NotImplementedError()
 
+  @abc.abstractmethod
   def _diffusion_elbo(self, x0):
     raise NotImplementedError()
 
