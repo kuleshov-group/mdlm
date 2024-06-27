@@ -7,31 +7,18 @@ import models
 import noise_schedule
 import utils
 
-from .core.diffusion import CoreDiffusion
-from .core.hooks import LightningHooks
+from .base import DiffusionAlgorithm
 from .core.sampling.ancestral import AncestralSampler
 from .core.genppl import GenPPLEvaluator
 
 
-class D3PM(
-  CoreDiffusion, 
-  LightningHooks, 
-  AncestralSampler, 
-  GenPPLEvaluator
-):
+class D3PM(DiffusionAlgorithm, AncestralSampler, GenPPLEvaluator):
   def __init__(
     self,
     config,
     tokenizer: transformers.PreTrainedTokenizer
   ):
-    CoreDiffusion.__init__(
-      self, 
-      config, 
-      vocab_size=tokenizer.vocab_size,
-      mask_token_id=tokenizer.mask_token_id,
-      pad_token_id=tokenizer.pad_token_id
-    )
-    LightningHooks.__init__(self, config, tokenizer)
+    DiffusionAlgorithm.__init__(self, config, tokenizer)
     AncestralSampler.__init__(self, config)
     GenPPLEvaluator.__init__(self, config)
     self.neg_infinity = -1000000.0

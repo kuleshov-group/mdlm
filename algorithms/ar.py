@@ -1,37 +1,31 @@
 import torch
 import transformers
 
-from .core.diffusion import CoreDiffusion
-from .core.hooks import LightningHooks
+from .base import DiffusionAlgorithm
 from .core.genppl import GenPPLEvaluator
 from .core.metrics import Loss
 
 
 class AR(
-  CoreDiffusion, LightningHooks, GenPPLEvaluator
+  DiffusionAlgorithm, GenPPLEvaluator
 ):
   def __init__(
     self,
     config,
     tokenizer: transformers.PreTrainedTokenizer
   ):
-    CoreDiffusion.__init__(
-      self, 
-      config, 
-      vocab_size=tokenizer.vocab_size,
-      mask_token_id=tokenizer.mask_token_id,
-      pad_token_id=tokenizer.pad_token_id
-    )
-    LightningHooks.__init__(self, config, tokenizer)
+    DiffusionAlgorithm.__init__(self, config, tokenizer)
     GenPPLEvaluator.__init__(self, config)
     self.tokenizer = tokenizer
 
   def forward(self, x, sigma):
-    """Returns log score."""
     sigma = self._process_sigma(sigma)
     with torch.cuda.amp.autocast(dtype=torch.float32):
       logits = self.backbone(x, sigma)
     return logits
+
+  def _diffusion_elbo(self, x0):
+    pass
 
   def _loss(self, x0, token_mask):
     input_tokens, output_tokens, token_mask = (

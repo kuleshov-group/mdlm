@@ -7,28 +7,20 @@ import models
 import noise_schedule
 import utils
 
-from .core.diffusion import CoreDiffusion
-from .core.hooks import LightningHooks
+from .base import DiffusionAlgorithm
 from .core.sampling.analytic import AnalyticSampler
 from .core.genppl import GenPPLEvaluator
 
 
 class SEDD(
-  CoreDiffusion, LightningHooks, AnalyticSampler, GenPPLEvaluator
+  DiffusionAlgorithm, AnalyticSampler, GenPPLEvaluator
 ):
   def __init__(
     self,
     config,
     tokenizer: transformers.PreTrainedTokenizer
   ):
-    CoreDiffusion.__init__(
-      self, 
-      config, 
-      vocab_size=tokenizer.vocab_size,
-      mask_token_id=tokenizer.mask_token_id,
-      pad_token_id=tokenizer.pad_token_id
-    )
-    LightningHooks.__init__(self, config, tokenizer)
+    DiffusionAlgorithm.__init__(self, config, tokenizer)
     AnalyticSampler.__init__(self, config)
     GenPPLEvaluator.__init__(self, config)
     self.tokenizer = tokenizer
