@@ -49,6 +49,10 @@ class SEDD(
                                          xt=x,
                                          sigma=sigma)
 
+  def get_score(self, x, sigma):
+    model_output = self.forward(x, sigma)
+    return model_output.exp()
+
   @torch.no_grad()
   def _sample(self, num_steps=None, eps=1e-5):
     """Generate samples from the model."""

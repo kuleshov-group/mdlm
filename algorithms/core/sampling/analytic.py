@@ -1,5 +1,6 @@
 import abc
 import torch
+import torch.nn.functional as F
 
 def _sample_categorical(categorical_probs):
   gumbel_norm = (
@@ -29,9 +30,9 @@ class AnalyticSampler(abc.ABC):
   # def noise(self, x, sigma_t):
   #   raise NotImplementedError()
 
-  # @abc.abstractmethod
-  # def get_score(self, x, sigma):
-  #   raise NotImplementedError()
+  @abc.abstractmethod
+  def get_score(self, x, sigma):
+    raise NotImplementedError()
 
   # also, these attributes must exist:
   # * self.config
