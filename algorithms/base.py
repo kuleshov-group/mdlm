@@ -1,76 +1,67 @@
 """Implements hooks used by PyTorch Lightning"""
 import abc
 import torch
-import hydra.utils
-import lightning as L
 import torchmetrics
 import transformers
 import dataloader
-from .metrics import NLL, BPD, Perplexity
+import lightning as L
+from .core.diffusion import CoreDiffusion
+from .core.metrics import NLL, BPD, Perplexity
 
+active_metrics = {
+  'nll': NLL(),
+  'bpd': BPD(),
+  'ppl': Perplexity(),
+}
 
-class LightningDiffusion(L.LightningModule, abc.ABC):
+class DiffusionAlgorithm(CoreDiffusion, abc.ABC):
   def __init__(
     self,
     config,
+    tokenizer: transformers.PreTrainedTokenizer
   ):
-    L.LightningModule.__init__(self)
+    CoreDiffusion.__init__(
+      self, 
+      config, 
+      vocab_size=tokenizer.vocab_size,
+      mask_token_id=tokenizer.mask_token_id,
+      pad_token_id=tokenizer.pad_token_id
+    )
     self.config = config
+    self.tokenizer = tokenizer #TODO: tokenizer should be in its own callback
     self.ema_status = (self.config.training.ema > 0)
+
+    self.fast_forward_epochs = None
+    self.fast_forward_batches = None
+
+    # if not hasattr(self, 'noise'):
+    #     raise NotImplementedError("Subclasses must define 'noise'.")
+    # if not hasattr(self, 'compute_generative_perplexity'):
+    #     raise NotImplementedError("Subclasses must define a gen ppl func.")
+
+    # metrics will automatically reset at end of epoch
+    metrics = torchmetrics.MetricCollection(active_metrics)
+    metrics.set_dtype(torch.float64)
+    self.train_metrics = metrics.clone(prefix='train/')
+    self.valid_metrics = metrics.clone(prefix='val/')
+    self.test_metrics = metrics.clone(prefix='test/')
 
   # we want to implement the following abstract functions
 
   @abc.abstractmethod
-  def forward(self, x, sigma_t):
+  def forward(self, x, sigma):
     raise NotImplementedError()
-
-  # TODO: FIXME: should be made inot abstract property
-  # @abc.abstractmethod
-  # def noise(self, x, sigma_t):
-  #   raise NotImplementedError()
 
   @abc.abstractmethod
-  def _loss(batch, attention_mask):
+  def _sample(self, num_steps=None, eps=1e-5):
+    """Generate samples from the model."""
     raise NotImplementedError()
 
-  def optimizer_step(self, *args, **kwargs):
-    L.LightningModule.optimizer_step(self, *args, **kwargs)
-    self.update_ema()
+  @abc.abstractmethod
+  def _diffusion_elbo(self, x0):
+    raise NotImplementedError()
 
-  def training_step(self, batch, batch_idx):
-    loss = self._compute_loss(batch, prefix='train')
-    self.log(name='trainer/loss',
-             value=loss.item(),
-             on_step=True,
-             on_epoch=False,
-             sync_dist=True)
-    return loss
-
-  def validation_step(self, batch, batch_idx):
-    return self._compute_loss(batch, prefix='val')
-
-  def configure_optimizers(self):
-    # TODO(yair): Lightning currently giving this warning when using `fp16`:
-    #  "Detected call of `lr_scheduler.step()` before `optimizer.step()`. "
-    #  Not clear if this is a problem or not.
-    #  See: https://github.com/Lightning-AI/pytorch-lightning/issues/5558
-    optimizer = torch.optim.AdamW(
-      self.iter_params(),
-      lr=self.config.optim.lr,
-      betas=(self.config.optim.beta1,
-             self.config.optim.beta2),
-      eps=self.config.optim.eps,
-      weight_decay=self.config.optim.weight_decay)
-
-    scheduler = hydra.utils.instantiate(
-      self.config.lr_scheduler, optimizer=optimizer)
-    scheduler_dict = {
-      'scheduler': scheduler,
-      'interval': 'step',
-      'monitor': 'val/loss',
-      'name': 'trainer/lr',
-    }
-    return [optimizer], [scheduler_dict]
+  # extra hooks used by the algorithm
 
   def on_train_start(self):
     self.move_ema_shadow_params_to_device()
@@ -107,104 +98,6 @@ class LightningDiffusion(L.LightningModule, abc.ABC):
           shuffle=False,
           persistent_workers=True))
     self.trainer.fit_loop._combined_loader.flattened = updated_dls
-
-  def _compute_loss(self, batch, prefix):
-    if 'attention_mask' in batch:
-      attention_mask = batch['attention_mask']
-    else:
-      attention_mask = None
-    losses = self._loss(batch['input_ids'], attention_mask)
-    loss = losses.loss
-
-    if prefix == 'train':
-      self.train_metrics.update(losses.nlls, losses.token_mask)
-      metrics = self.train_metrics
-    elif prefix == 'val':
-      self.valid_metrics.update(losses.nlls, losses.token_mask)
-      metrics = self.valid_metrics
-    elif prefix == 'test':
-      self.test_metrics.update(losses.nlls, losses.token_mask)
-      metrics = self.test_metrics
-    else:
-      raise ValueError(f'Invalid prefix: {prefix}')
-
-    self.log_dict(metrics,
-                  on_step=False,
-                  on_epoch=True,
-                  sync_dist=True)
-    return loss
-
-active_metrics = {
-  'nll': NLL(),
-  'bpd': BPD(),
-  'ppl': Perplexity(),
-}
-
-class LightningHooks(abc.ABC):
-  def __init__(
-    self,
-    config,
-    tokenizer: transformers.PreTrainedTokenizer
-  ):
-    self.config = config
-    self.tokenizer = tokenizer
-    self.ema_status = (self.config.training.ema > 0)
-
-    self.fast_forward_epochs = None
-    self.fast_forward_batches = None
-
-    # if not hasattr(self, 'noise'):
-    #     raise NotImplementedError("Subclasses must define 'noise'.")
-    # if not hasattr(self, 'compute_generative_perplexity'):
-    #     raise NotImplementedError("Subclasses must define a gen ppl func.")
-
-    # metrics will automatically reset at end of epoch
-    metrics = torchmetrics.MetricCollection(active_metrics)
-    metrics.set_dtype(torch.float64)
-    self.train_metrics = metrics.clone(prefix='train/')
-    self.valid_metrics = metrics.clone(prefix='val/')
-    self.test_metrics = metrics.clone(prefix='test/')
-
-  # we want to implement the following abstract functions
-
-  @abc.abstractmethod
-  def train_mode(self, ema):
-    raise NotImplementedError()
-
-  @abc.abstractmethod
-  def eval_mode(self, ema):
-    raise NotImplementedError()
-
-  @abc.abstractmethod
-  def store_ema(self):
-    raise NotImplementedError()
-
-  @abc.abstractmethod
-  def restore_ema(self):
-    raise NotImplementedError()
-
-  @abc.abstractmethod
-  def update_ema(self):
-    raise NotImplementedError()
-
-  @abc.abstractmethod
-  def load_ema_from_checkpoint(self, checkpoint):
-    raise NotImplementedError()
-
-  @abc.abstractmethod
-  def save_ema_to_checkpoint(self, checkpoint):
-    raise NotImplementedError()
-
-  @abc.abstractmethod
-  def move_ema_shadow_params_to_device():
-    raise NotImplementedError()
-
-  @abc.abstractmethod
-  def iter_params(self):
-    raise NotImplementedError
-
-  # FIXME: also requires compute_generative_perplexity to be def by subclass
-  # (better to make dependency more explicit)
 
   def on_train_epoch_start(self):
     self.train_mode(ema=False)

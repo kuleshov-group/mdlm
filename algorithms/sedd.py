@@ -8,7 +8,7 @@ import noise_schedule
 import utils
 
 from .core.diffusion import CoreDiffusion
-from .core.lightning import LightningHooks
+from .core.hooks import LightningHooks
 from .core.sampling.analytic import AnalyticSampler
 from .core.genppl import GenPPLEvaluator
 

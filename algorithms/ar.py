@@ -2,7 +2,7 @@ import torch
 import transformers
 
 from .core.diffusion import CoreDiffusion
-from .core.lightning import LightningHooks
+from .core.hooks import LightningHooks
 from .core.genppl import GenPPLEvaluator
 from .core.metrics import Loss
 

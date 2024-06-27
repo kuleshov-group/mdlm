@@ -8,9 +8,10 @@ import noise_schedule
 import utils
 
 from .d3pm import D3PM
+from .core.sampling.analytic import AnalyticSampler
 
 
-class MDLM(D3PM):
+class MDLM(D3PM, AnalyticSampler):
   def __init__(
     self,
     config,
@@ -21,6 +22,7 @@ class MDLM(D3PM):
       config, 
       tokenizer=tokenizer
     )
+    AnalyticSampler.__init__(self, config)
 
   def _subs_parameterization(self, logits, xt):
     # log prob at the mask index = - infinity

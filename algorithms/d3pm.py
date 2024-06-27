@@ -8,13 +8,16 @@ import noise_schedule
 import utils
 
 from .core.diffusion import CoreDiffusion
-from .core.lightning import LightningHooks
+from .core.hooks import LightningHooks
 from .core.sampling.ancestral import AncestralSampler
 from .core.genppl import GenPPLEvaluator
 
 
 class D3PM(
-  CoreDiffusion, LightningHooks, AncestralSampler, GenPPLEvaluator
+  CoreDiffusion, 
+  LightningHooks, 
+  AncestralSampler, 
+  GenPPLEvaluator
 ):
   def __init__(
     self,

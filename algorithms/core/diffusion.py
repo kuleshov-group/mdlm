@@ -6,10 +6,10 @@ import models
 import noise_schedule
 import utils
 
-from .lightning import LightningDiffusion
+from .training import LightningAlgorithm
 from .metrics import Loss
 
-class CoreDiffusion(LightningDiffusion):
+class CoreDiffusion(LightningAlgorithm):
   def __init__(
     self,
     config,
@@ -18,7 +18,7 @@ class CoreDiffusion(LightningDiffusion):
     pad_token_id=None,
     noise_dtype=torch.float32
   ):
-    LightningDiffusion.__init__(self, config)
+    LightningAlgorithm.__init__(self, config)
     self.save_hyperparameters()
     self.config = config
 
