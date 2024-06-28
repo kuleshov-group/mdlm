@@ -516,7 +516,7 @@ class Diffusion(L.LightningModule):
     self,
     text_samples: typing.List[str],
     retokenize: bool = True,
-    max_length: typing.Optional[int] = None) -> torch.FloatTensor:
+    max_length: typing.Optional[int] = None) -> None:
     """Compute the generative perplexity of the model.
 
     Args:
