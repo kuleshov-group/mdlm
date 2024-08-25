@@ -30,7 +30,7 @@ In this repo, we release:
 * **Baseline implementations** [[Examples]](#baselines):
   1. Autoregressive model that matches the SOTA AR performance on LM1B.
   2. Score Entropy Based Discrete Diffusion [SEDD](https://arxiv.org/abs/2310.16834).
-  3. An efficient implementation of the absorbing state [D3PM](https://arxiv.org/abs/2107.03006) that beats the previous state of the art diffuision model SEDD on LM1B.
+  3. An efficient implementation of the absorbing state [D3PM](https://arxiv.org/abs/2107.03006) that beats the previous SOTA text diffusion model SEDD on LM1B.
 * **Samplers**
   1. Ancestral sampling as proposed in D3PM.
   2. Analytic sampler as proposed in SEDD.
