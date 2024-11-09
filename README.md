@@ -225,12 +225,12 @@ This repository was built off of [SEDD](https://github.com/louaaron/Score-Entrop
 
 ## Citation
 ```
-@misc{sahoo2024simple,
-      title={Simple and Effective Masked Diffusion Language Models}, 
-      author={Subham Sekhar Sahoo and Marianne Arriola and Yair Schiff and Aaron Gokaslan and Edgar Marroquin and Justin T Chiu and Alexander Rush and Volodymyr Kuleshov},
-      year={2024},
-      eprint={2406.07524},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL}
+@inproceedings{
+sahoo2024simple,
+title={Simple and Effective Masked Diffusion Language Models},
+author={Subham Sekhar Sahoo and Marianne Arriola and Aaron Gokaslan and Edgar Mariano Marroquin and Alexander M Rush and Yair Schiff and Justin T Chiu and Volodymyr Kuleshov},
+booktitle={The Thirty-eighth Annual Conference on Neural Information Processing Systems},
+year={2024},
+url={https://openreview.net/forum?id=L4uaAR4ArM}
 }
 ```
