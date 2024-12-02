@@ -370,6 +370,11 @@ def get_dataset(
       'ag_news',
       cache_dir=cache_dir,
       streaming=streaming)
+  elif dataset_name == 'squad':
+    dataset = datasets.load_dataset(
+      'squad',
+      cache_dir=cache_dir,
+    )
   else:
     dataset = datasets.load_dataset(
       dataset_name,
@@ -410,6 +415,10 @@ def get_dataset(
       text = example['sentence']
     elif 'scientific_papers' in dataset_name:
       text = example['article']
+    elif dataset_name == 'squad':
+      question = example['question']
+      context = example['context']
+      text = f"Question: {question} Context: {context}"
     else:
       text = example['text']
     
@@ -458,6 +467,9 @@ def get_dataset(
   elif dataset_name == 'ag_news':
     tokenized_dataset = tokenized_dataset.remove_columns(
       ['text', 'label'])
+  elif dataset_name == 'squad':
+    tokenized_dataset = tokenized_dataset.remove_columns(
+      ['question', 'context', 'answers'])
   else:
     tokenized_dataset = tokenized_dataset.remove_columns(
       'text')

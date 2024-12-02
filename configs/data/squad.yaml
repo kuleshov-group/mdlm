@@ -1,0 +1,6 @@
+train: squad
+valid: squad
+tokenizer_name_or_path: gpt2
+cache_dir: /data
+wrap: True
+streaming: False
