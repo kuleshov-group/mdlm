@@ -10,6 +10,7 @@ By [Subham Sekhar Sahoo](https://s-sahoo.github.io), [Marianne Arriola](https://
 [![Open In Studio](https://pl-bolts-doc-images.s3.us-east-2.amazonaws.com/app-2/studio-badge.svg)](https://lightning.ai/lightning-ai/studios/simple-and-effective-masked-diffusion-language-models)
 
 [**Update April 14, 2025: An improved implementation is available here:** [DUO Github repo](https://github.com/s-sahoo/duo).]
+[**Update Jun 3, 2025: Faster and better alternatives to MDLM:** [Eso-LMs Github repo](https://github.com/s-sahoo/Eso-LMs).]
 
 ![graphical_abstract_updated_2](https://github.com/s-sahoo/mdlm/assets/16799748/b0cab23a-d966-45fa-a3ad-be972b23a98a)
 
