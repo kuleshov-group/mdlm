@@ -1,0 +1,7 @@
+- model=small
+- data=openwebtext-split
+- wandb.name=mdlm-owt
+- parameterization=d3pm
+- model.length=1024
+- eval.compute_generative_perplexity=True
+- sampling.steps=1000

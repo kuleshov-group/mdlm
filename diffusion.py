@@ -84,12 +84,12 @@ class Diffusion(L.LightningModule):
     self.antithetic_sampling = self.config.training.antithetic_sampling
     self.importance_sampling = self.config.training.importance_sampling
     self.change_of_variables = self.config.training.change_of_variables
-    if (not hasattr(self.tokenizer, 'mask_token')
-        or self.tokenizer.mask_token is None):
-      self.mask_index = self.vocab_size
-      self.vocab_size += 1
-    else:
-      self.mask_index = self.tokenizer.mask_token_id
+    # if (not hasattr(self.tokenizer, 'mask_token')
+    #     or self.tokenizer.mask_token is None):
+    #   self.mask_index = self.vocab_size
+    #   self.vocab_size += 1
+    # else:
+    #   self.mask_index = self.tokenizer.mask_token_id
     self.parameterization = self.config.parameterization
     if self.config.backbone == 'dit':
       self.backbone = models.dit.DIT(
@@ -279,8 +279,8 @@ class Diffusion(L.LightningModule):
     return logits
 
   def _d3pm_parameterization(self, logits):
-    if self.subs_masking:
-      logits[:, :, self.mask_index] += self.neg_infinity
+    # if self.subs_masking:
+    #   logits[:, :, self.mask_index] += self.neg_infinity
     logits = logits - torch.logsumexp(logits, dim=-1,
                                       keepdim=True)
     return logits
@@ -338,26 +338,66 @@ class Diffusion(L.LightningModule):
     alpha_t = 1 - t + torch.zeros_like(xt)
     alpha_s = 1 - (t - dt) + torch.zeros_like(xt)
 
-    log_x_theta_at_x0 = torch.gather(
-      model_output, -1, x0[:, :, None]).squeeze(-1)
-    log_x_theta_at_m = model_output[:, :, self.mask_index]
-    x_theta_at_m = log_x_theta_at_m.exp()
+    # log_x_theta_at_x0 = torch.gather(
+    #   model_output, -1, x0[:, :, None]).squeeze(-1)
+    # log_x_theta_at_m = model_output[:, :, self.mask_index]
+    # x_theta_at_m = log_x_theta_at_m.exp()
     
-    term_1_coef = dt / t
-    term_1_log_nr = torch.log(alpha_t * x_theta_at_m / t + 1)
-    term_1_log_dr = log_x_theta_at_x0
+    # term_1_coef = dt / t
+    # term_1_log_nr = torch.log(alpha_t * x_theta_at_m / t + 1)
+    # term_1_log_dr = log_x_theta_at_x0
     
-    term_2_coef = 1 - dt / t
-    term_2_log_nr = term_1_log_nr
-    term_2_log_dr = torch.log(alpha_s * x_theta_at_m / (t - dt) + 1)
+    # term_2_coef = 1 - dt / t
+    # term_2_log_nr = term_1_log_nr
+    # term_2_log_dr = torch.log(alpha_s * x_theta_at_m / (t - dt) + 1)
 
-    L_vb_masked = (
-      term_1_coef * (term_1_log_nr - term_1_log_dr)
-      + term_2_coef * (term_2_log_nr - term_2_log_dr))
+    # L_vb_masked = (
+    #   term_1_coef * (term_1_log_nr - term_1_log_dr)
+    #   + term_2_coef * (term_2_log_nr - term_2_log_dr))
 
-    L_vb = L_vb_masked * (xt == self.mask_index)
+    # L_vb = L_vb_masked * (xt == self.mask_index)
 
-    return self.T * L_vb
+    # return self.T * L_vb
+
+    beta_t = alpha_t / alpha_s
+
+    one_hot_xt = F.one_hot(xt, num_classes=self.vocab_size).to(model_output.dtype)
+    one_hot_x0 = F.one_hot(x0, num_classes=self.vocab_size).to(model_output.dtype)
+
+    log_x_theta_at_xt = torch.gather(
+      model_output, -1, xt[:, :, None]).squeeze(-1)
+    
+    x_theta_at_xt = log_x_theta_at_xt.exp()
+    
+    x0_at_xt = (one_hot_x0 * one_hot_xt).sum(dim=-1)
+
+    theta_term_1 = alpha_t * x_theta_at_xt * one_hot_xt
+    theta_term_2 = beta_t * (1 - alpha_s) * one_hot_xt/ self.vocab_size
+    theta_term_3 = (1 - beta_t) * alpha_s * model_output / self.vocab_size
+    theta_term_4 = (1 - beta_t) * (1 - alpha_s) / (self.vocab_size ** 2) * torch.ones_like(model_output)
+    theta_numerator = theta_term_1 + theta_term_2 + theta_term_3 + theta_term_4
+    theta_denom_term1 = alpha_t * x_theta_at_xt
+    theta_denom_term2 = (1 - alpha_t) / self.vocab_size
+    theta_denominator = theta_denom_term1 + theta_denom_term2
+    theta_probs = theta_numerator / theta_denominator
+    theta_probs = theta_probs.clamp(min=1e-12)
+
+    true_term_1 = alpha_t * x0_at_xt * one_hot_xt
+    true_term_2 = beta_t * (1 - alpha_s) * one_hot_xt / self.vocab_size
+    true_term_3 = (1 - beta_t) * alpha_s * one_hot_x0 / self.vocab_size
+    true_term_4 = (1 - beta_t) * (1 - alpha_s) / (self.vocab_size ** 2) * torch.ones_like(model_output)
+    true_numerator = true_term_1 + true_term_2 + true_term_3 + true_term_4
+    true_denom_term1 = alpha_t * x0_at_xt
+    true_denom_term2 = (1 - alpha_t) / self.vocab_size
+    true_denominator = true_denom_term1 + true_denom_term2
+    true_probs = true_numerator / true_denominator
+    true_probs = true_probs.clamp(min=1e-12)
+    loss = - torch.log(theta_probs) * true_probs
+    loss = loss.sum(dim=-1) 
+
+    return self.T * loss 
+
+
 
   def _compute_loss(self, batch, prefix):
     if 'attention_mask' in batch:
@@ -583,13 +623,15 @@ class Diffusion(L.LightningModule):
       move_chance: float torch.Tensor with shape (batch_size, 1).
     """
     move_indices = torch.rand(
-      * x.shape, device=x.device) < move_chance
-    xt = torch.where(move_indices, self.mask_index, x)
+      *x.shape, device=x.device) < move_chance
+    # Sample random tokens for positions to be replaced
+    random_tokens = torch.randint(0, self.vocab_size, x.shape, device=x.device)
+    xt = torch.where(move_indices, random_tokens, x)
     return xt
 
   def _sample_prior(self, *batch_dims):
-    return self.mask_index * torch.ones(
-      * batch_dims, dtype=torch.int64)
+    # Return uniformly random tokens for prior state
+    return torch.randint(0, self.vocab_size, batch_dims, dtype=torch.int64)
 
   def _ddpm_caching_update(self, x, t, dt, p_x0=None):
     assert self.config.noise.type == 'loglinear'
@@ -630,13 +672,32 @@ class Diffusion(L.LightningModule):
     # Technically, this isn't q_xs since there's a division
     # term that is missing. This division term doesn't affect
     # the samples.
-    q_xs = log_p_x0.exp() * (move_chance_t
-                             - move_chance_s)
-    q_xs[:, :, self.mask_index] = move_chance_s[:, :, 0]
-    _x = _sample_categorical(q_xs)
 
-    copy_flag = (x != self.mask_index).to(x.dtype)
-    return copy_flag * x + (1 - copy_flag) * _x
+    # q_xs = log_p_x0.exp() * (move_chance_t
+    #                          - move_chance_s)
+    # q_xs[:, :, self.mask_index] = move_chance_s[:, :, 0]
+    # _x = _sample_categorical(q_xs)
+
+    # copy_flag = (x != self.mask_index).to(x.dtype)
+    # return copy_flag * x + (1 - copy_flag) * _x
+
+    one_hot_x = F.one_hot(x, num_classes=self.vocab_size).to(log_p_x0.dtype) 
+
+    alpha_s = 1 - move_chance_s
+    alpha_t = 1 - move_chance_t
+    beta_t = alpha_t / alpha_s
+    x_theta = log_p_x0.exp()
+    x_theta_at_x = torch.gather(
+      x_theta, -1, x[:, :, None]).squeeze(-1)
+
+    theta_term_1 = alpha_t * x_theta_at_x * one_hot_x
+    theta_term_2 = beta_t * (1 - alpha_s) * one_hot_x / self.vocab_size
+    theta_term_3 = (1 - beta_t) * alpha_s * x_theta / self.vocab_size
+    theta_term_4 = (1 - beta_t) * (1 - alpha_s) / (self.vocab_size ** 2) * torch.ones_like(x_theta)
+    theta_numerator = theta_term_1 + theta_term_2 + theta_term_3 + theta_term_4
+    
+    _x = _sample_categorical(theta_numerator)
+    return _x
 
   def _ar_sampler(self, bsz):
     # precompute token buffer

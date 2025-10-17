@@ -8,11 +8,11 @@ defaults:
   - /lr_scheduler: constant_warmup
 
 mode: train  # train / ppl_eval / sample_eval
-diffusion: absorbing_state
+diffusion: flip
 backbone: dit  # dit / dimamba / ar
-parameterization: subs  # subs / d3pm / sedd
+parameterization: d3pm  # subs / d3pm / sedd
 time_conditioning: False
-T: 0  # 0 (continuous time) / 1000 
+T: 1000  # 0 (continuous time) / 1000 
 subs_masking: False
 
 seed: 1
@@ -27,7 +27,7 @@ loader:
   pin_memory: True
 
 sampling:
-  predictor: ddpm_cache  # analytic, ddpm, ddpm_cache
+  predictor: ddpm  # analytic, ddpm, ddpm_cache
   steps: 128
   noise_removal: True
   # TODO(yair): @subham, why aren't these params under `eval`?
