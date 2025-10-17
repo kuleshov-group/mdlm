@@ -10,8 +10,9 @@ dependencies:
   - pip=23.3.1
   - python=3.9
   - pytorch-cuda=12.1
+  # - pytorch=2.3.0
   - pip:
-      - causal-conv1d==1.1.3.post1
+      # - causal-conv1d==1.1.3.post1
       - datasets==2.18.0
       - einops==0.7.0
       - fsspec==2024.2.0
@@ -20,7 +21,7 @@ dependencies:
       - hydra-core==1.3.2
       - ipdb==0.13.13
       - lightning==2.2.1
-      - mamba-ssm==1.1.4
+      # - mamba-ssm==1.1.4
       - notebook==7.1.1
       - nvitop==1.3.2
       - omegaconf==2.3.0
