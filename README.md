@@ -80,7 +80,7 @@ sbatch scripts/train_owt_mdlm.sh
 
 We have uploaded MDLM model trained on OpenWebText for 1M training steps to the Huggingface hub 🤗:
 [kuleshov-group/mdlm-owt](https://huggingface.co/kuleshov-group/mdlm-owt)
-Furthermore, we have released the checkpoints for the AR and SEDD baselines trained on OpenWebText in this [Google Drive folder](https://drive.google.com/drive/folders/16LuuptK7Xfk-vzhQYZBZ0SA-B-BFluau?usp=sharing).
+Furthermore, we have released the checkpoints for the AR and SEDD baselines trained on OpenWebText in this [Google Drive folder](https://drive.google.com/drive/folders/16ynR1QOWWkiRoDU0Y5NR-Ea99W5uhI0k?usp=sharing).
 
 ## Reproducing Experiments
 
@@ -193,7 +193,7 @@ python main.py \
 
 ### Baseline evaluation
 <a name="baselines"></a>
-We release the checkpoints for the baselines: SEDD and AR trained on OpenWebText in this [Google Drive folder](https://drive.google.com/drive/folders/16LuuptK7Xfk-vzhQYZBZ0SA-B-BFluau?usp=sharing). Download the checkpoints: `ar.ckpt`, `sedd.ckpt` and use the following commands to compute test perplexity:
+We release the checkpoints for the baselines: SEDD and AR trained on OpenWebText in this [Google Drive folder](https://drive.google.com/drive/folders/16ynR1QOWWkiRoDU0Y5NR-Ea99W5uhI0k?usp=sharing). Download the checkpoints: `ar.ckpt`, `sedd.ckpt` and use the following commands to compute test perplexity:
 #### AR
 ```bash
 python main.py \
